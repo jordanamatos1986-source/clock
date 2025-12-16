@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Clock with Dark/Light, Fullscreen, 12/24 Hour Toggle</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            transition: background-color 0.3s, color 0.3s;
+            position: relative;
+        }
+
+        #clock {
+            font-size: 5em;
+            font-weight: bold;
+        }
+
+        .button {
+            position: absolute;
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: opacity 0.2s;
+        }
+
+        #toggleMode { top: 20px; right: 20px; }
+        #fullscreenBtn { top: 20px; left: 20px; }
+        #hourFormatBtn { bottom: 20px; right: 20px; }
+
+        /* Light mode */
+        body.light {
+            background-color: #f0f0f0;
+            color: #000;
+        }
+
+        body.light .button {
+            background-color: #000;
+            color: #fff;
+        }
+
+        /* Dark mode */
+        body.dark {
+            background-color: #121212;
+            color: #fff;
+        }
+
+        body.dark .button {
+            background-color: #fff;
+            color: #000;
+        }
+    </style>
+</head>
+<body class="light">
+    <div id="clock"></div>
+    <button id="toggleMode" class="button">Switch to Dark Mode</button>
+    <button id="fullscreenBtn" class="button">Go Fullscreen</button>
+    <button id="hourFormatBtn" class="button">Switch to 12hr</button>
+
+    <script>
+        let is24Hour = true; // default to 24-hour
+
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes().toString().padStart(2, '0');
+            let seconds = now.getSeconds().toString().padStart(2, '0');
+            let suffix = "";
+
+            if (!is24Hour) {
+                suffix = hours >= 12 ? " PM" : " AM";
+                hours = hours % 12;
+                if (hours === 0) hours = 12;
+            }
+
+            hours = hours.toString().padStart(2, '0');
+            document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}${suffix}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Dark/Light mode toggle
+        const toggleButton = document.getElementById('toggleMode');
+        toggleButton.addEventListener('click', () => {
+            const body = document.body;
+            if (body.classList.contains('light')) {
+                body.classList.remove('light');
+                body.classList.add('dark');
+                toggleButton.textContent = 'Switch to Light Mode';
+            } else {
+                body.classList.remove('dark');
+                body.classList.add('light');
+                toggleButton.textContent = 'Switch to Dark Mode';
+            }
+        });
+
+        // Fullscreen button
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        fullscreenBtn.addEventListener('click', () => {
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen();
+            } else if (document.documentElement.webkitRequestFullscreen) {
+                document.documentElement.webkitRequestFullscreen();
+            } else if (document.documentElement.msRequestFullscreen) {
+                document.documentElement.msRequestFullscreen();
+            }
+            // hide all buttons
+            document.querySelectorAll('.button').forEach(btn => btn.style.display = 'none');
+        });
+
+        // 12/24 hour toggle button
+        const hourFormatBtn = document.getElementById('hourFormatBtn');
+        hourFormatBtn.addEventListener('click', () => {
+            is24Hour = !is24Hour;
+            hourFormatBtn.textContent = is24Hour ? 'Switch to 12hr' : 'Switch to 24hr';
+            updateClock();
+        });
+
+        // Listen for exiting fullscreen to show buttons again
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                document.querySelectorAll('.button').forEach(btn => btn.style.display = 'block');
+            }
+        });
+    </script>
+</body>
+</html>
